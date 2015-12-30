@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/wiki/karaage0703/uonome/008.png" alt="uonome" width="256" height="256">
+<img src="https://raw.githubusercontent.com/wiki/karaage0703/uonome/008.png" alt="uonome" width="400" height="400">
 
 # uonome
 Uonome is inverted converter for fish eye photo.
