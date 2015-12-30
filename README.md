@@ -20,3 +20,14 @@ You can convert from fish eye photo to ultra wide-angle photo.
 
 
 
+# Creating iconset (only for MAC user)
+
+If you want to create iconset, execute below command.
+
+~~~~
+$ iconutil -c icns sketch.iconset
+~~~~
+
+
+# License
+This software is released under the MIT License, see LICENSE.
