@@ -7,10 +7,10 @@ Textlabel readmeText;
 
 boolean redraw = true;
 
-DropdownList mode_l, interpolation_l;
+DropdownList mode_l, ip_l;
 
 int conv_mode = 0; // 0: Inverted Convert 1: Convert
-//int interpolation = 1; // 0: Nearest neighbor 1: Bilinear 2: Bicubic
+int ip_mode = 1; // 0: Nearest neighbor 1: Bilinear 2: Bicubic
 
 PImage base; // source image(base)
 PImage tuned; // tuned image
@@ -77,15 +77,52 @@ PImage ImageFisheyeConverted(PImage src) {
       if (conv_mode == 0) { // inverted fisheye convert
         rate = 1 / rate;
       }
-      int tmp_x = (int)(dx * rate + src.width/2);
-      int tmp_y = (int)(dy * rate + src.height/2);
 
-      int pos = x + y*src.width;
-      if (tmp_x >= 0 && tmp_x < src.width && tmp_y >=0 && tmp_y < src.height) {
-        res.pixels[pos] = src.pixels[tmp_x + tmp_y*src.width];
+      if (ip_mode == 0) {
+        int tmp_x = (int)(dx * rate + src.width/2);
+        int tmp_y = (int)(dy * rate + src.height/2);
+
+        int pos = x + y*src.width;
+        if (tmp_x >= 0 && tmp_x < src.width && tmp_y >=0 && tmp_y < src.height) {
+          res.pixels[pos] = src.pixels[tmp_x + tmp_y*src.width];
+        }
+        else {
+          res.pixels[pos] = color(0, 0, 0);
+        }
       }
-      else {
-        res.pixels[pos] = color(0, 0, 0);
+
+      if (ip_mode == 1){
+        float tmp_x = (int)(dx * rate + src.width/2);
+        float tmp_y = (int)(dy * rate + src.height/2);
+
+        float tmp_fx = (float)(dx * rate + src.width/2);
+        float tmp_fy = (float)(dy * rate + src.height/2);
+
+        int pos = x + y*src.width;
+        if (tmp_x >= 1 && tmp_x < src.width-1 && tmp_y >=1 && tmp_y < src.height-1) {
+          color tmp_color_i0j0 = src.pixels[(int)(tmp_x)+(int)(tmp_y)*src.width];
+          color tmp_color_i0j1 = src.pixels[(int)(tmp_x)+(int)(tmp_y+1)*src.width];
+          color tmp_color_i1j0 = src.pixels[(int)(tmp_x+1)+(int)(tmp_y)*src.width];
+          color tmp_color_i1j1 = src.pixels[(int)(tmp_x+1)+(int)(tmp_y+1)*src.width];
+
+          res.pixels[pos] = color(
+              (int)((tmp_x+1-tmp_fx)*(tmp_y+1-tmp_fy)*red(tmp_color_i0j0))
+              + (int)((tmp_x+1-tmp_fx)*(tmp_fy-tmp_y)*red(tmp_color_i0j1))
+              + (int)((tmp_fx-tmp_x)*(tmp_y+1-tmp_fy)*red(tmp_color_i1j0))
+              + (int)((tmp_fx-tmp_x)*(tmp_fy-tmp_y)*red(tmp_color_i1j1)),
+              (int)((tmp_x+1-tmp_fx)*(tmp_y+1-tmp_fy)*green(tmp_color_i0j0))
+              + (int)((tmp_x+1-tmp_fx)*(tmp_fy-tmp_y)*green(tmp_color_i0j1))
+              + (int)((tmp_fx-tmp_x)*(tmp_y+1-tmp_fy)*green(tmp_color_i1j0))
+              + (int)((tmp_fx-tmp_x)*(tmp_fy-tmp_y)*green(tmp_color_i1j1)),
+              (int)((tmp_x+1-tmp_fx)*(tmp_y+1-tmp_fy)*blue(tmp_color_i0j0))
+              + (int)((tmp_x+1-tmp_fx)*(tmp_fy-tmp_y)*blue(tmp_color_i0j1))
+              + (int)((tmp_fx-tmp_x)*(tmp_y+1-tmp_fy)*blue(tmp_color_i1j0))
+              + (int)((tmp_fx-tmp_x)*(tmp_fy-tmp_y)*blue(tmp_color_i1j1))
+              );
+        }
+        else {
+          res.pixels[pos] = color(0, 0, 0);
+        }
       }
     }
   }
@@ -141,6 +178,14 @@ void setup() {
   customize(mode_l);
   mode_l.addItem("Inverted Fisheye Conv", 0);
   mode_l.addItem("Normal Fisheye Conv", 1);
+
+  ip_l = cp5.addDropdownList("ipList")
+    .setPosition(150, 340)
+    ;
+
+  customize(ip_l);
+  ip_l.addItem("Nearest Neighbor", 0);
+  ip_l.addItem("Bilinear", 1);
 
   cp5.addButton("Save Image")
     .setPosition(40, 500)
@@ -201,7 +246,11 @@ public void controlEvent(ControlEvent theEvent) {
     if(theEvent.getController().getName() == "modeList"){
       conv_mode = (int)theEvent.getController().getValue();
     }
-  }
+
+    if(theEvent.getController().getName() == "ipList"){
+      ip_mode = (int)theEvent.getController().getValue();
+    }
+ }
 
  if (theEvent.isFrom("Exit")) {
     exit();
