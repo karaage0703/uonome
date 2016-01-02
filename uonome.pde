@@ -135,16 +135,6 @@ void setup() {
   base = createImage(size_x, size_y, RGB);
 }
 
-void fileSelected_load(File selection) {
-  if (selection == null) {
-    println("Window was closed or the user hit cancel.");
-  } else {
-    println("User selected " + selection.getAbsolutePath());
-    base = loadImage(selection.getAbsolutePath());
-  }
-  redraw = true;
-}
-
 void customize(DropdownList ddl) {
   // a convenience function to customize a DropdownList
   ddl.setBackgroundColor(color(190));
@@ -155,6 +145,15 @@ void customize(DropdownList ddl) {
   ddl.setColorActive(color(255, 128));
 }
 
+void fileSelected_load(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    base = loadImage(selection.getAbsolutePath());
+  }
+  redraw = true;
+}
 
 void fileSelected_save(File selection) {
   if (selection == null) {
