@@ -208,6 +208,9 @@ void customize(DropdownList ddl) {
   ddl.getCaptionLabel().set("dropdown");
   ddl.setColorBackground(color(60));
   ddl.setColorActive(color(255, 128));
+  ddl.setSize(100, 120);
+  ddl.setItemHeight(39);
+  ddl.setBarHeight(39);
 }
 
 void fileSelected_load(File selection) {
