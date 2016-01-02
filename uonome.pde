@@ -15,12 +15,15 @@ int conv_mode = 0; // 0: Inverted Convert 1: Convert
 PImage base; // source image(base)
 PImage tuned; // tuned image
 PImage converted; // fisheye converted image
+PImage cropped; // croped image
 
 float gamma_s = 1.0; // gamma value for source image
 float gain_s = 1;  // gain for source image
 
 float rad_fish_val = 1;  // radius of fish eye
 float dist_fish_val = 1;  // distance of fish eye
+
+int crop_val = 0; // crop percent
 
 int size_x = 640;
 int size_y = 480;
@@ -45,6 +48,17 @@ PImage TuneImage(PImage src) {
         (int)(lut_s[(int)green(tmp_color)]*gain_s), 
         (int)(lut_s[(int)blue(tmp_color)]*gain_s)
         );
+  }
+  return res;
+}
+
+PImage CropImage(PImage src, int crop_line) {
+  PImage res = createImage(src.width, src.height - 2*crop_line, RGB);
+
+  src.loadPixels();
+
+  for (int i = 0; i < src.width*(src.height - 2*crop_line); i++) {
+    res.pixels[i] = src.pixels[i+src.width*crop_line];
   }
   return res;
 }
@@ -114,6 +128,12 @@ void setup() {
     .setSize(100, 25)
     ;
 
+  cp5.addSlider("crop_val")
+    .setRange(0, 25)
+    .setPosition(40, 280)
+    .setSize(100, 25)
+    ;
+
   mode_l = cp5.addDropdownList("modeList")
     .setPosition(40, 340)
     ;
@@ -160,7 +180,7 @@ void fileSelected_save(File selection) {
     println("Window was closed or the user hit cancel.");
   } else {
     println("User selected " + selection.getAbsolutePath());
-    converted.save(selection.getAbsolutePath());
+    cropped.save(selection.getAbsolutePath());
   }
 }
 
@@ -195,9 +215,11 @@ void draw() {
     redraw = false;
     tuned = TuneImage(base);
     converted = ImageFisheyeConverted(tuned);
+    int crop_line = (int)(float(crop_val * base.height)/100);
+    cropped = CropImage(converted, crop_line);
   }
-  draw_image(tuned, cont_w, 0, thumb_w, thumb_h);
-  draw_image(converted, cont_w, thumb_h, size_x, size_y);
+  draw_image(base, cont_w, 0, thumb_w, thumb_h);
+  draw_image(cropped, cont_w, thumb_h, size_x, size_y);
 }
 
 void draw_image(PImage img, int x, int y, int lim_w, int lim_h) {
