@@ -7,7 +7,7 @@ Textlabel readmeText;
 
 boolean redraw = true;
 
-ListBox l;
+DropdownList mode_l, interpolation_l;
 
 int conv_mode = 0; // 0: Inverted Convert 1: Convert
 //int interpolation = 1; // 0: Nearest neighbor 1: Bilinear 2: Bicubic
@@ -26,6 +26,7 @@ int size_x = 640;
 int size_y = 480;
 int thumb_w = 160;
 int thumb_h = 120;
+int cont_w = 300;
 
 PImage TuneImage(PImage src) {
   float[] lut_s = new float[256];
@@ -40,10 +41,10 @@ PImage TuneImage(PImage src) {
   for (int i = 0; i < src.width*src.height; i++) {
     color tmp_color = src.pixels[i];
     res.pixels[i] = color(
-    (int)(lut_s[(int)red(tmp_color)]*gain_s), 
-    (int)(lut_s[(int)green(tmp_color)]*gain_s), 
-    (int)(lut_s[(int)blue(tmp_color)]*gain_s)
-      );
+        (int)(lut_s[(int)red(tmp_color)]*gain_s), 
+        (int)(lut_s[(int)green(tmp_color)]*gain_s), 
+        (int)(lut_s[(int)blue(tmp_color)]*gain_s)
+        );
   }
   return res;
 }
@@ -80,102 +81,110 @@ PImage ImageFisheyeConverted(PImage src) {
 }
 
 void setup() {
-  size(size_x, size_y+thumb_h);
+  size(940, 600);
 
   cp5 = new ControlP5(this);
 
-
-  controlWindow = cp5.addControlWindow("Tunewindow", 100, 100, 300, 600)
-    .hideCoordinates()
-      .setBackground(color(40))
-        ;
-
   cp5.addButton("Load Source Image")
     .setPosition(40, 40)
-      .setSize(130, 39)
-        .moveTo(controlWindow)
-          ;
+    .setSize(130, 39)
+    ;
 
   cp5.addSlider("gamma_s")
     .setRange(0, 2)
-      .setPosition(40, 100)
-        .setSize(100, 25)
-          .moveTo(controlWindow)
-            ;
+    .setPosition(40, 100)
+    .setSize(100, 25)
+    ;
 
   cp5.addSlider("gain_s")
     .setRange(0, 4)
-      .setPosition(40, 140)
-        .setSize(100, 25)
-          .moveTo(controlWindow)
-            ;
+    .setPosition(40, 140)
+    .setSize(100, 25)
+    ;
 
   cp5.addSlider("rad_fish_val")
     .setRange(0, 2)
-      .setPosition(40, 200)
-        .setSize(100, 25)
-          .moveTo(controlWindow)
-            ;
+    .setPosition(40, 200)
+    .setSize(100, 25)
+    ;
 
   cp5.addSlider("dist_fish_val")
     .setRange(0, 2)
-      .setPosition(40, 240)
-        .setSize(100, 25)
-          .moveTo(controlWindow)
-            ;
+    .setPosition(40, 240)
+    .setSize(100, 25)
+    ;
 
-  l = cp5.addListBox("myList")
+  mode_l = cp5.addDropdownList("modeList")
     .setPosition(40, 340)
-      .setSize(120, 180)
-        .setItemHeight(39)
-          .setBarHeight(20)
-            .setColorBackground(color(40, 128))
-              .setColorActive(color(255, 128))
-                .moveTo(controlWindow)
-                  ;
+    ;
 
-  l.captionLabel().toUpperCase(true);
-  l.captionLabel().set("Convert Mode");
-  l.captionLabel().setColor(0xffff0000);
-  l.captionLabel().style().marginTop = 3;
-  l.valueLabel().style().marginTop = 3;
-
-  ListBoxItem lbi;
-  lbi = l.addItem("Inverted FishEyeConv", 0);
-  lbi.setColorBackground(0xffff0000);
-  lbi = l.addItem("Normal FishEyeConv", 1);
-  lbi.setColorBackground(0xffff0000);
+  customize(mode_l);
+  mode_l.addItem("Inverted Fisheye Conv", 0);
+  mode_l.addItem("Normal Fisheye Conv", 1);
 
   cp5.addButton("Save Image")
     .setPosition(40, 500)
-      .setSize(100, 39)
-        .moveTo(controlWindow)
-          ;
+    .setSize(100, 39)
+    ;
 
   cp5.addButton("Exit")
     .setPosition(160, 500)
-      .setSize(100, 39)
-        .moveTo(controlWindow)
-          ;
+    .setSize(100, 39)
+    ;
 
   base = createImage(size_x, size_y, RGB);
 }
 
+void fileSelected_load(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    base = loadImage(selection.getAbsolutePath());
+  }
+  redraw = true;
+}
+
+void customize(DropdownList ddl) {
+  // a convenience function to customize a DropdownList
+  ddl.setBackgroundColor(color(190));
+  ddl.setItemHeight(20);
+  ddl.setBarHeight(15);
+  ddl.getCaptionLabel().set("dropdown");
+  ddl.setColorBackground(color(60));
+  ddl.setColorActive(color(255, 128));
+}
+
+
+void fileSelected_save(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    converted.save(selection.getAbsolutePath());
+  }
+}
+
+
 public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom("Load Source Image")) {
-    base = loadImage(selectInput());
-  }
-
-  if (theEvent.isGroup()) {
-    // an event from a group e.g. scrollList
-    conv_mode = (int)theEvent.group().value();
+    selectInput("Select a file to process:", "fileSelected_load");
   }
 
   if (theEvent.isFrom("Save Image")) {
-    converted.save(selectOutput());
+    selectOutput("Select a file to write to:", "fileSelected_save");
   }
 
-  if (theEvent.isFrom("Exit")) {
+  if (theEvent.isGroup()) {
+    // check if the Event was triggered from a ControlGroup
+    println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
+  } else if (theEvent.isController()) {
+    if(theEvent.getController().getName() == "modeList"){
+      conv_mode = (int)theEvent.getController().getValue();
+    }
+  }
+
+ if (theEvent.isFrom("Exit")) {
     exit();
   }
   redraw = true;
@@ -188,8 +197,8 @@ void draw() {
     tuned = TuneImage(base);
     converted = ImageFisheyeConverted(tuned);
   }
-  draw_image(tuned, 0, 0, thumb_w, thumb_h);
-  draw_image(converted, 0, thumb_h, size_x, size_y);
+  draw_image(tuned, cont_w, 0, thumb_w, thumb_h);
+  draw_image(converted, cont_w, thumb_h, size_x, size_y);
 }
 
 void draw_image(PImage img, int x, int y, int lim_w, int lim_h) {
@@ -203,4 +212,3 @@ void draw_image(PImage img, int x, int y, int lim_w, int lim_h) {
   }
   image(img, x, y, vw, vh);
 }
-
