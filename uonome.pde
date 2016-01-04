@@ -258,8 +258,8 @@ void customize(DropdownList ddl) {
   ddl.setColorBackground(color(60));
   ddl.setColorActive(color(255, 128));
   ddl.setSize(100, 120);
-  ddl.setItemHeight(39);
-  ddl.setBarHeight(39);
+  ddl.setItemHeight(30);
+  ddl.setBarHeight(30);
 }
 
 void fileSelected_load(File selection) {
