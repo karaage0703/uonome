@@ -7,6 +7,7 @@ DropdownList mode_l, ip_l;
 
 int conv_mode = 0; // 0: Inverted Convert 1: Convert
 int ip_mode = 1; // 0: Nearest neighbor 1: Bilinear 2: Bicubic
+float alpha_bc = -0.75; // alpha value of Bicubic 
 
 PImage base; // source image(base)
 PImage tuned; // tuned image
@@ -150,14 +151,12 @@ PImage ImageFisheyeConverted(PImage src) {
           float g = 0.0;
           float b = 0.0;
 
-          float a = -1.0;
-
           for (int jy = tmp_y - 1; jy <= tmp_y + 2; jy++) {
             for (int jx = tmp_x - 1; jx <= tmp_x + 2; jx++) {
 
-              float s = sinc(abs(tmp_fx-jx), a) * sinc(abs(tmp_fy-jy), a);
+              float s = sinc(abs(tmp_fx-jx), alpha_bc) * sinc(abs(tmp_fy-jy), alpha_bc);
               if (s == 0) {
-                 continue;
+                continue;
               }
 
               color c = src.pixels[jx+jy*src.width];
@@ -231,18 +230,24 @@ void setup() {
     .setPosition(150, 340)
     ;
 
+  cp5.addSlider("alpha_bc")
+    .setRange(-1.0, -0.5)
+    .setPosition(40, 480)
+    .setSize(100, 25)
+    ;
+
   customize(ip_l);
   ip_l.addItem("Nearest Neighbor", 0);
   ip_l.addItem("Bilinear", 1);
   ip_l.addItem("Bicubic", 2);
 
   cp5.addButton("Save Image")
-    .setPosition(40, 500)
+    .setPosition(40, 540)
     .setSize(100, 39)
     ;
 
   cp5.addButton("Exit")
-    .setPosition(160, 500)
+    .setPosition(160, 540)
     .setSize(100, 39)
     ;
 
