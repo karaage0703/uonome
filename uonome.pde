@@ -59,6 +59,18 @@ PImage CropImage(PImage src, int crop_line) {
   return res;
 }
 
+float sinc(float t, float a) {
+  if (t <= 1.0) {
+    return (a+2.0)*t*t*t - (a+3.0)*t*t + 1;
+  }
+  else if (t <= 2.0) {
+    return a*t*t*t - 5.0*a*t*t + 8.0*a*t - 4.0*a;
+  }
+  else {
+    return 0.0;
+  }
+}
+
 PImage ImageFisheyeConverted(PImage src) {
   PImage res = createImage(src.width, src.height, RGB);
   src.loadPixels();
@@ -115,6 +127,46 @@ PImage ImageFisheyeConverted(PImage src) {
               + (int)((tmp_fx-tmp_x)*(tmp_y+1-tmp_fy)*blue(tmp_color_i1j0))
               + (int)((tmp_fx-tmp_x)*(tmp_fy-tmp_y)*blue(tmp_color_i1j1))
               );
+        }
+        else {
+          res.pixels[pos] = color(0, 0, 0);
+        }
+      }
+
+      if (ip_mode == 2) {
+        //bicubic interpolation
+        //see. http://www.rainorshine.asia/2013/04/03/post2351.html
+
+        float tmp_fx = (float)(dx * rate + src.width/2);
+        float tmp_fy = (float)(dy * rate + src.height/2);
+
+        int   tmp_x = (int)tmp_fx;
+        int   tmp_y = (int)tmp_fy;
+
+        int pos = x + y*src.width;
+        if (tmp_x >= 1 && tmp_x < src.width-2 && tmp_y >=1 && tmp_y < src.height-2) {
+
+          float r = 0.0;
+          float g = 0.0;
+          float b = 0.0;
+
+          float a = -1.0;
+
+          for (int jy = tmp_y - 1; jy <= tmp_y + 2; jy++) {
+            for (int jx = tmp_x - 1; jx <= tmp_x + 2; jx++) {
+
+              float s = sinc(abs(tmp_fx-jx), a) * sinc(abs(tmp_fy-jy), a);
+              if (s == 0) {
+                 continue;
+              }
+
+              color c = src.pixels[jx+jy*src.width];
+              r += red(c)   * s;
+              g += green(c) * s;
+              b += blue(c)  * s;
+            }
+          }
+          res.pixels[pos] = color(r, g, b);
         }
         else {
           res.pixels[pos] = color(0, 0, 0);
@@ -182,6 +234,7 @@ void setup() {
   customize(ip_l);
   ip_l.addItem("Nearest Neighbor", 0);
   ip_l.addItem("Bilinear", 1);
+  ip_l.addItem("Bicubic", 2);
 
   cp5.addButton("Save Image")
     .setPosition(40, 500)
