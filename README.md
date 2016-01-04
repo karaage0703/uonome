@@ -8,8 +8,7 @@ For Processing 3.xx (Processing 3.0.1 is recommended)
 
 
 # Screen shot
-<img src="https://raw.githubusercontent.com/wiki/karaage0703/uonome/001.jpg" alt="uonome" width="640" height="480">
-
+<img src="https://raw.githubusercontent.com/wiki/karaage0703/uonome/012.png" alt="uonome" width="640" height="480">
 
 # sample photo
 
