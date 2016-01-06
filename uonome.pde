@@ -20,7 +20,8 @@ float gain_s = 1;  // gain for source image
 float rad_fish_val = 1;  // radius of fish eye
 float dist_fish_val = 1;  // distance of fish eye
 
-int crop_val = 0; // crop percent
+int crop_v_val = 0; // crop vertical(height) percent
+int crop_h_val = 0; // crop horizontal(width) percent
 
 int size_x = 640;
 int size_y = 480;
@@ -49,15 +50,8 @@ PImage TuneImage(PImage src) {
   return res;
 }
 
-PImage CropImage(PImage src, int crop_line) {
-  PImage res = createImage(src.width, src.height - 2*crop_line, RGB);
-
-  src.loadPixels();
-
-  for (int i = 0; i < src.width*(src.height - 2*crop_line); i++) {
-    res.pixels[i] = src.pixels[i+src.width*crop_line];
-  }
-  return res;
+PImage CropImage(PImage src, int crop_h_line, int crop_v_line) {
+  return src.get(crop_h_line, crop_v_line, src.width - 2*crop_h_line, src.height - 2*crop_v_line);
 }
 
 float sinc(float t, float a) {
@@ -212,14 +206,20 @@ void setup() {
     .setSize(100, 25)
     ;
 
-  cp5.addSlider("crop_val")
+    cp5.addSlider("crop_h_val")
     .setRange(0, 25)
     .setPosition(40, 280)
     .setSize(100, 25)
     ;
 
+  cp5.addSlider("crop_v_val")
+    .setRange(0, 25)
+    .setPosition(40, 320)
+    .setSize(100, 25)
+    ;
+
   mode_l = cp5.addDropdownList("modeList")
-    .setPosition(40, 340)
+    .setPosition(40, 360)
     ;
 
   customize(mode_l);
@@ -227,9 +227,9 @@ void setup() {
   mode_l.addItem("Normal Fisheye Conv", 1);
 
   ip_l = cp5.addDropdownList("ipList")
-    .setPosition(150, 340)
+    .setPosition(150, 360)
     ;
-
+    
   cp5.addSlider("alpha_bc")
     .setRange(-1.0, -0.5)
     .setPosition(40, 480)
@@ -321,8 +321,9 @@ void draw() {
     redraw = false;
     tuned = TuneImage(base);
     converted = ImageFisheyeConverted(tuned);
-    int crop_line = (int)(float(crop_val * base.height)/100);
-    cropped = CropImage(converted, crop_line);
+    int crop_h_line = (int)(float(crop_h_val * base.width)/100);
+    int crop_v_line = (int)(float(crop_v_val * base.height)/100);
+    cropped = CropImage(converted, crop_h_line, crop_v_line);
   }
   draw_image(base, cont_w, 0, thumb_w, thumb_h);
   draw_image(cropped, cont_w, thumb_h, size_x, size_y);
