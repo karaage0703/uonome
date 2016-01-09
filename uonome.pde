@@ -234,7 +234,7 @@ void setup() {
     
   cp5.addSlider("alpha_bc")
     .setRange(-1.0, -0.5)
-    .setPosition(40, 480)
+    .setPosition(40, 500)
     .setSize(100, 25)
     ;
 
