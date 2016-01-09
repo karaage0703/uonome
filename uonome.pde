@@ -1,4 +1,6 @@
+import drop.*; /* http://transfluxus.github.io/drop/ */
 import controlP5.*;
+SDrop drop;
 ControlP5 cp5;
 
 boolean redraw = true;
@@ -251,6 +253,7 @@ void setup() {
     .setSize(100, 39)
     ;
 
+  drop = new SDrop(this);
   base = createImage(size_x, size_y, RGB);
 }
 
@@ -265,6 +268,13 @@ void customize(DropdownList ddl) {
   ddl.setSize(100, 120);
   ddl.setItemHeight(30);
   ddl.setBarHeight(30);
+}
+
+void dropEvent(DropEvent theDropEvent) {
+  if(!theDropEvent.isImage()) { return; }
+  
+  base = loadImage(theDropEvent.toString());
+  redraw = true;
 }
 
 void fileSelected_load(File selection) {
